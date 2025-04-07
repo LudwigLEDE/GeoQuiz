@@ -1,0 +1,25 @@
+{
+  "setName": "GeoQuiz Set 2",
+  "questions": [
+    {
+      "questionText": "Identify this landmark:",
+      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Statue_of_Liberty_7.jpg/300px-Statue_of_Liberty_7.jpg",
+      "answerOptions": [
+        { "text": "New York", "isCorrect": true },
+        { "text": "San Francisco", "isCorrect": false },
+        { "text": "Chicago", "isCorrect": false },
+        { "text": "Miami", "isCorrect": false }
+      ]
+    },
+    {
+      "questionText": "Which landmark is shown here?",
+      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Taj_Mahal_in_March_2004.jpg/300px-Taj_Mahal_in_March_2004.jpg",
+      "answerOptions": [
+        { "text": "India", "isCorrect": true },
+        { "text": "Pakistan", "isCorrect": false },
+        { "text": "Bangladesh", "isCorrect": false },
+        { "text": "Nepal", "isCorrect": false }
+      ]
+    }
+  ]
+}
