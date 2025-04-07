@@ -2,13 +2,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * A panel that displays a quiz question and its answer options using GridBagLayout.
- * Components are centered and styled using global colors.
- * When an answer is selected, buttons provide feedback:
- * the correct answer turns green and incorrect ones red, then after a delay, the next question loads.
+ * The answer options are randomized each time a question is displayed.
+ * When an answer is selected, the buttons are colored (green for correct, red for incorrect)
+ * in a game-show style, then after a delay, the next question is loaded.
  * When finished, a "Return to Main Menu" button appears.
  */
 public class QuizPanel extends JPanel {
@@ -19,6 +20,8 @@ public class QuizPanel extends JPanel {
     private JPanel answersPanel;
     private int correctCount;
     private List<JButton> answerButtons;
+    // New list to hold the randomized answer options for the current question
+    private List<AnswerOption> currentAnswerOptions;
     private QuizFinishedListener finishedListener;
 
     /**
@@ -46,7 +49,7 @@ public class QuizPanel extends JPanel {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Score label (top center)
+        // Score label at the top, spanning two columns.
         scoreLabel = new JLabel("Score: 0", SwingConstants.CENTER);
         scoreLabel.setFont(new Font("Arial", Font.BOLD, 18));
         scoreLabel.setForeground(AppColors.COPY);
@@ -67,7 +70,7 @@ public class QuizPanel extends JPanel {
         gbc.gridy = 2;
         add(questionImageLabel, gbc);
 
-        // Answers panel (centered)
+        // Answers panel using GridBagLayout for answer buttons.
         answersPanel = new JPanel(new GridBagLayout());
         answersPanel.setBackground(AppColors.FOREGROUND);
         gbc.gridy = 3;
@@ -75,11 +78,12 @@ public class QuizPanel extends JPanel {
     }
 
     /**
-     * Displays the current question or the final score if no questions remain.
+     * Displays the current question. Randomizes the answer order for each question.
      */
     public void displayCurrentQuestion() {
         Question question = quizGame.getCurrentQuestion();
         if (question == null) {
+            // No more questions: show final score and a return button.
             removeAll();
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(10, 10, 10, 10);
@@ -107,26 +111,28 @@ public class QuizPanel extends JPanel {
             return;
         }
 
-        // Set question text and image
+        // Set question text and image.
         questionLabel.setText(question.getQuestionText() != null ? question.getQuestionText() : "");
         questionImageLabel.setIcon(question.getQuestionImage());
 
-        // Clear answers panel and reset button list
+        // Randomize the answer options.
+        List<AnswerOption> answers = question.getAnswerOptions();
+        currentAnswerOptions = new ArrayList<>(answers);
+        Collections.shuffle(currentAnswerOptions);
+
+        // Clear previous answers and build new answer buttons.
         answersPanel.removeAll();
         answerButtons.clear();
 
-        List<AnswerOption> answers = question.getAnswerOptions();
-        int numAnswers = answers.size();
-
-        // Arrange answer buttons in a grid (2 columns)
+        int numAnswers = currentAnswerOptions.size();
         GridBagConstraints gbcAns = new GridBagConstraints();
         gbcAns.insets = new Insets(5, 5, 5, 5);
         gbcAns.fill = GridBagConstraints.BOTH;
         for (int i = 0; i < numAnswers; i++) {
-            AnswerOption answer = answers.get(i);
+            AnswerOption answer = currentAnswerOptions.get(i);
             JButton btn = new JButton();
             btn.setFont(new Font("Arial", Font.PLAIN, 18));
-            // Use primary light background for buttons by default
+            // Default button style using primary light background.
             btn.setBackground(AppColors.PRIMARY_LIGHT);
             btn.setForeground(AppColors.PRIMARY_CONTENT);
             if (answer.getText() != null) {
@@ -146,7 +152,6 @@ public class QuizPanel extends JPanel {
             gbcAns.gridy = i / 2;
             answersPanel.add(btn, gbcAns);
         }
-
         revalidate();
         repaint();
     }
@@ -155,27 +160,25 @@ public class QuizPanel extends JPanel {
      * Handles answer selection: disables buttons, sets colors based on correctness,
      * and after a delay advances to the next question.
      *
-     * @param selectedIndex the index of the selected answer
+     * @param selectedIndex the index of the selected answer from the randomized list
      */
     private void handleAnswerSelection(int selectedIndex) {
-        Question currentQuestion = quizGame.getCurrentQuestion();
-        if (selectedIndex >= currentQuestion.getAnswerOptions().size()) {
+        if (selectedIndex >= currentAnswerOptions.size()) {
             return;
         }
-        // Disable all answer buttons
+        // Disable all answer buttons.
         for (JButton btn : answerButtons) {
             btn.setEnabled(false);
         }
-        AnswerOption selectedAnswer = currentQuestion.getAnswerOptions().get(selectedIndex);
+        AnswerOption selectedAnswer = currentAnswerOptions.get(selectedIndex);
         int correctIndex = -1;
-        List<AnswerOption> answers = currentQuestion.getAnswerOptions();
-        for (int i = 0; i < answers.size(); i++) {
-            if (answers.get(i).isCorrect()) {
+        for (int i = 0; i < currentAnswerOptions.size(); i++) {
+            if (currentAnswerOptions.get(i).isCorrect()) {
                 correctIndex = i;
                 break;
             }
         }
-        // Set colors: use SUCCESS for correct, ERROR for incorrect
+        // Apply color feedback: correct button green, others red.
         if (selectedAnswer.isCorrect()) {
             answerButtons.get(selectedIndex).setBackground(AppColors.SUCCESS);
             answerButtons.get(selectedIndex).setForeground(AppColors.SUCCESS_CONTENT);
@@ -201,7 +204,7 @@ public class QuizPanel extends JPanel {
                 }
             }
         }
-        // Delay transition to the next question
+        // Delay transition to the next question.
         Timer timer = new Timer(1500, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 quizGame.nextQuestion();
@@ -213,9 +216,9 @@ public class QuizPanel extends JPanel {
     }
 
     /**
-     * Allows external components (e.g. controller input) to select an answer.
+     * Allows external components (e.g., controller input) to select an answer.
      *
-     * @param index the index of the answer to select
+     * @param index the index of the answer to select from the randomized list
      */
     public void selectAnswer(int index) {
         handleAnswerSelection(index);
