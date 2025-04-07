@@ -1,50 +1,27 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
+/**
+ * Main is the entry point of the quiz game application.
+ * It creates a full screen window with a main menu for selecting the quiz set.
+ */
 public class Main {
     public static void main(String[] args) {
+        // Create a full screen window
+        JFrame frame = new JFrame("Quiz Game");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        frame.setBounds(0, 0, screenSize.width, screenSize.height);
 
+        // Create a container with CardLayout to swap between the main menu and quiz panel
+        CardLayout cardLayout = new CardLayout();
+        JPanel container = new JPanel(cardLayout);
 
-        JFrame jFrame = new JFrame();
-        jFrame.setSize(200, 200);
+        // Create and add the main menu panel
+        MainMenuPanel mainMenuPanel = new MainMenuPanel(cardLayout, container);
+        container.add(mainMenuPanel, "MainMenu");
 
-        JButton jButton = new JButton("huhu");
-
-        jFrame.setLayout(null);
-
-        jButton.setBounds(50, 50, 20, 20);
-
-        jFrame.add(jButton);
-
-        jFrame.setVisible(true);
-
-
-//        System.setProperty("net.java.games.input.useDefaultPlugin", "false");
-
-
-
-
-        AutomatenController.getInstance().addListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    Rectangle bounds = jButton.getBounds();
-                    jButton.setBounds(bounds.x + 10, bounds.y, bounds.width, bounds.height);
-                }
-                else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    Rectangle bounds = jButton.getBounds();
-                    jButton.setBounds(bounds.x - 10, bounds.y, bounds.width, bounds.height);
-                }
-                else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    Rectangle bounds = jButton.getBounds();
-                    jButton.setBounds(bounds.x , bounds.y+10, bounds.width, bounds.height);
-                }
-
-            }
-        });
+        frame.add(container);
+        frame.setVisible(true);
     }
 }
