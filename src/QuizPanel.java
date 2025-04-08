@@ -10,8 +10,11 @@ import java.util.List;
  * <p>
  * Die Antwortoptionen werden für jede Frage zufällig angeordnet. Nach der Auswahl
  * einer Antwort wird visuelles Feedback gegeben, und nach einer kurzen Verzögerung
- * die nächste Frage geladen. Zusätzlich wird am unteren Rand ein Manual-Label
+ * wird die nächste Frage geladen. Zusätzlich wird am unteren Rand ein Manual-Label
  * angezeigt, welches über die Tastatursteuerung informiert.
+ * <br>
+ * Neu: Mit den Pfeiltasten oder den Tasten W, A, S, D kann durch die Antwortoptionen navigiert
+ * werden; der aktuell ausgewählte Button wird hervorgehoben und mit ENTER kann die Auswahl bestätigt werden.
  * </p>
  */
 public class QuizPanel extends JPanel {
@@ -28,6 +31,9 @@ public class QuizPanel extends JPanel {
 
     // Permanentes Manual-Label, das Informationen zur Tastatursteuerung anzeigt
     private JLabel manualLabel;
+
+    // Index der aktuell markierten Antwort (für die Tastatur-Navigation)
+    private int currentSelectionIndex = -1;
 
     /**
      * Konstruktor für das QuizPanel.
@@ -46,9 +52,9 @@ public class QuizPanel extends JPanel {
 
         // Initialisiere UI-Komponenten (inklusive Manual-Label)
         initializeComponents();
-        // Füge den KeyListener hinzu, um auch über die Tastatur zu steuern
-        addCustomKeyListener();
-        // Stelle sicher, dass dieses Panel den Fokus erhält
+        // Richte Key Bindings für die Navigation in den Antwortoptionen ein
+        setupAnswerKeyBindings();
+        // Stelle sicher, dass dieses Panel den Tastaturfokus erhält
         setFocusable(true);
         requestFocusInWindow();
 
@@ -86,71 +92,125 @@ public class QuizPanel extends JPanel {
 
         // Antworten-Panel
         answersPanel = new JPanel(new GridBagLayout());
-        answersPanel.setBackground(AppColors.FOREGROUND);
+        answersPanel.setBackground(AppColors.BACKGROUND);
         gbc.gridy = 3;
         add(answersPanel, gbc);
 
         // Permanentes Manual-Label am unteren Rand (Zeile 4)
         manualLabel = new JLabel("<html>Verfügbare Tasten:<br>" +
-                "- Pfeiltasten oder W, A, S, D: Antwortauswahl</html>", SwingConstants.CENTER);
+                "- Pfeiltasten: Navigation in den Antwortoptionen<br>" +
+                "- ENTER: Auswahl bestätigen</html>", SwingConstants.CENTER);
         manualLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         manualLabel.setForeground(AppColors.COPY);
         gbc.gridy = 4;
         gbc.gridwidth = 2;
+        gbc.ipadx = 2;
         add(manualLabel, gbc);
     }
 
     /**
-     * Fügt einen KeyListener hinzu, der sowohl Pfeiltasten als auch W, A, S, D
-     * zur Antwortauswahl verarbeitet und eine Konsolen-Nachricht loggt.
+     * Richtet Key Bindings ein, um in den Antwortoptionen zu navigieren und
+     * die Auswahl mit ENTER zu bestätigen.
      */
-    private void addCustomKeyListener() {
-        addKeyListener(new KeyAdapter() {
+    private void setupAnswerKeyBindings() {
+        InputMap im = getInputMap(WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = getActionMap();
+
+        // Linke Richtung / A
+        im.put(KeyStroke.getKeyStroke("LEFT"), "moveLeft");
+        im.put(KeyStroke.getKeyStroke('A'), "moveLeft");
+        am.put("moveLeft", new AbstractAction() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                int keyCode = e.getKeyCode();
-                int selectedIndex = -1;
-                // Pfeiltasten: Links->Antwort 0, Rechts->Antwort 1, Oben->Antwort 2, Unten->Antwort 3
-                if (keyCode == KeyEvent.VK_LEFT) {
-                    selectedIndex = 0;
-                } else if (keyCode == KeyEvent.VK_RIGHT) {
-                    selectedIndex = 1;
-                } else if (keyCode == KeyEvent.VK_UP) {
-                    selectedIndex = 2;
-                } else if (keyCode == KeyEvent.VK_DOWN) {
-                    selectedIndex = 3;
+            public void actionPerformed(ActionEvent e) {
+                if (answerButtons.size() == 0) return;
+                int col = currentSelectionIndex % 2;
+                if (col > 0) { // in der gleichen Zeile nach links
+                    currentSelectionIndex -= 1;
+                    updateButtonSelection();
                 }
-                // Alternative Tasten: A->Antwort 0, D->Antwort 1, W->Antwort 2, S->Antwort 3
-                else if (keyCode == KeyEvent.VK_A) {
-                    selectedIndex = 0;
-                } else if (keyCode == KeyEvent.VK_D) {
-                    selectedIndex = 1;
-                } else if (keyCode == KeyEvent.VK_W) {
-                    selectedIndex = 2;
-                } else if (keyCode == KeyEvent.VK_S) {
-                    selectedIndex = 3;
+            }
+        });
+
+        // Rechte Richtung / D
+        im.put(KeyStroke.getKeyStroke("RIGHT"), "moveRight");
+        im.put(KeyStroke.getKeyStroke('D'), "moveRight");
+        am.put("moveRight", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (answerButtons.size() == 0) return;
+                int col = currentSelectionIndex % 2;
+                if (col == 0 && currentSelectionIndex + 1 < answerButtons.size()) {
+                    currentSelectionIndex += 1;
+                    updateButtonSelection();
                 }
-                if (selectedIndex != -1) {
-                    // Logge den Tastendruck und die aktuell angezeigte Frage (falls vorhanden)
-                    System.out.println("Taste gedrückt: " + KeyEvent.getKeyText(keyCode));
-                    if (quizGame.getCurrentQuestion() != null) {
-                        System.out.println("Aktuelle Frage: " + quizGame.getCurrentQuestion().getQuestionText());
-                    } else {
-                        System.out.println("Keine Frage aktuell verfügbar.");
-                    }
-                    selectAnswer(selectedIndex);
+            }
+        });
+
+        // Oben / W
+        im.put(KeyStroke.getKeyStroke("UP"), "moveUp");
+        im.put(KeyStroke.getKeyStroke('W'), "moveUp");
+        am.put("moveUp", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (answerButtons.size() == 0) return;
+                if (currentSelectionIndex - 2 >= 0) {
+                    currentSelectionIndex -= 2;
+                    updateButtonSelection();
+                }
+            }
+        });
+
+        // Unten / S
+        im.put(KeyStroke.getKeyStroke("DOWN"), "moveDown");
+        im.put(KeyStroke.getKeyStroke('S'), "moveDown");
+        am.put("moveDown", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (answerButtons.size() == 0) return;
+                if (currentSelectionIndex + 2 < answerButtons.size()) {
+                    currentSelectionIndex += 2;
+                    updateButtonSelection();
+                }
+            }
+        });
+
+        // ENTER: Auswahl bestätigen
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "confirmSelection");
+        am.put("confirmSelection", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (answerButtons.size() > 0 && currentSelectionIndex >= 0) {
+                    System.out.println("ENTER gedrückt. Auswahl bestätigen: Index " + currentSelectionIndex);
+                    selectAnswer(currentSelectionIndex);
                 }
             }
         });
     }
 
     /**
-     * Zeigt die aktuelle Frage an, skaliert und setzt das Bild und mischt die Antwortoptionen.
+     * Aktualisiert die visuelle Markierung der Antwortbuttons, sodass der aktuell
+     * ausgewählte Button hervorgehoben wird.
+     */
+    private void updateButtonSelection() {
+        for (int i = 0; i < answerButtons.size(); i++) {
+            if (i == currentSelectionIndex) {
+                // Hebe den ausgewählten Button hervor (z. B. gelber Rahmen)
+                answerButtons.get(i).setBorder(BorderFactory.createLineBorder(Color.YELLOW, 3));
+            } else {
+                // Standardrahmen
+                answerButtons.get(i).setBorder(BorderFactory.createLineBorder(AppColors.BORDER));
+            }
+        }
+    }
+
+    /**
+     * Zeigt die aktuelle Frage an, skaliert und setzt das Bild (unter Beibehaltung des Seitenverhältnisses),
+     * und mischt die Antwortoptionen.
      */
     public void displayCurrentQuestion() {
         Question question = quizGame.getCurrentQuestion();
         if (question == null) {
-            // Keine weiteren Fragen: Zeige End-Punktzahl und Rückkehr-Button
+            // Keine weiteren Fragen: Zeige End-Punktzahl und einen Button zur Rückkehr ins Hauptmenü
             removeAll();
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(10, 10, 10, 10);
@@ -181,14 +241,20 @@ public class QuizPanel extends JPanel {
         // Setze Fragetext
         questionLabel.setText(question.getQuestionText() != null ? question.getQuestionText() : "");
 
-        // Skalieren des Bildes auf feste Maximalmaße (z.B. 500x300 Pixel)
+        // Skalieren des Bildes unter Beibehaltung des Seitenverhältnisses:
         if (question.getQuestionImage() != null) {
             ImageIcon originalIcon = question.getQuestionImage();
+            int originalWidth = originalIcon.getIconWidth();
+            int originalHeight = originalIcon.getIconHeight();
             int maxWidth = 500;
             int maxHeight = 300;
-            Image scaledImage = originalIcon.getImage().getScaledInstance(maxWidth, maxHeight, Image.SCALE_SMOOTH);
-            ImageIcon scaledIcon = new ImageIcon(scaledImage);
-            questionImageLabel.setIcon(scaledIcon);
+            double widthRatio = (double) maxWidth / originalWidth;
+            double heightRatio = (double) maxHeight / originalHeight;
+            double scalingFactor = Math.min(widthRatio, heightRatio);
+            int newWidth = (int) (originalWidth * scalingFactor);
+            int newHeight = (int) (originalHeight * scalingFactor);
+            Image scaledImage = originalIcon.getImage().getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+            questionImageLabel.setIcon(new ImageIcon(scaledImage));
         } else {
             questionImageLabel.setIcon(null);
         }
@@ -220,7 +286,6 @@ public class QuizPanel extends JPanel {
             final int index = i;
             btn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    // Logge, welcher Button geklickt wurde und welche Frage aktuell ist.
                     System.out.println("Button geklickt: Index " + index);
                     if (quizGame.getCurrentQuestion() != null) {
                         System.out.println("Aktuelle Frage: " + quizGame.getCurrentQuestion().getQuestionText());
@@ -233,6 +298,13 @@ public class QuizPanel extends JPanel {
             gbcAns.gridy = i / 2;
             answersPanel.add(btn, gbcAns);
         }
+
+        // Setze den aktuellen Auswahlindex auf 0 (erste Antwort), sofern vorhanden, und aktualisiere die Markierung
+        if (answerButtons.size() > 0) {
+            currentSelectionIndex = 0;
+            updateButtonSelection();
+        }
+
         revalidate();
         repaint();
     }
@@ -247,7 +319,6 @@ public class QuizPanel extends JPanel {
         if (selectedIndex >= currentAnswerOptions.size()) {
             return;
         }
-        // Logge die ausgewählte Antwort
         AnswerOption selectedAnswer = currentAnswerOptions.get(selectedIndex);
         System.out.println("Antwort ausgewählt: Index " + selectedIndex +
                 ", Text: " + (selectedAnswer.getText() != null ? selectedAnswer.getText() : "kein Text"));
@@ -289,7 +360,7 @@ public class QuizPanel extends JPanel {
                 }
             }
         }
-        // Verzögerung (1,5 Sekunden) zur Anzeige der nächsten Frage
+        // Nach einer Verzögerung zur nächsten Frage wechseln
         Timer timer = new Timer(1500, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 quizGame.nextQuestion();
@@ -301,7 +372,7 @@ public class QuizPanel extends JPanel {
     }
 
     /**
-     * Ermöglicht externen Komponenten (z. B. Tastatureingaben) die Auswahl einer Antwort.
+     * Ermöglicht externen Komponenten (z. B. über Key Bindings) die Auswahl einer Antwort.
      *
      * @param index Index der auszuwählenden Antwort aus der zufälligen Anordnung.
      */
