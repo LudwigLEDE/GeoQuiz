@@ -1,10 +1,15 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
+/**
+ * Hauptmenü-Oberfläche für das Quiz-Spiel.
+ * <p>
+ * Dieses Panel ermöglicht die Auswahl eines Quiz-Sets und den Spielstart.
+ * Unten (SOUTH) wird ein immer sichtbares Label mit allen verfügbaren
+ * Steuerungstasten (inklusive Pfeiltasten bzw. W, A, S, D) angezeigt.
+ * </p>
+ */
 public class MainMenuPanel extends JPanel {
     private String selectedSetName = null;
     private JLabel titleLabel;
@@ -13,27 +18,38 @@ public class MainMenuPanel extends JPanel {
     private CardLayout cardLayout;
     private JPanel container;
 
+    /**
+     * Konstruktor für das Hauptmenü-Panel.
+     *
+     * @param cardLayout Layout-Manager für den Container.
+     * @param container  Der Container, in dem die Panels angezeigt werden.
+     */
     public MainMenuPanel(CardLayout cardLayout, JPanel container) {
         this.cardLayout = cardLayout;
         this.container = container;
-        setLayout(new GridBagLayout());
+
+        // Verwende BorderLayout für die Gesamtanordnung
+        setLayout(new BorderLayout());
         setBackground(AppColors.BACKGROUND);
 
+        // Zentrales Panel (CENTER) für Titel, Auswahl und Start-Button
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        centerPanel.setBackground(AppColors.BACKGROUND);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(15, 15, 15, 15);
         gbc.gridx = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Title Label (centered)
-        titleLabel = new JLabel("Select a Quiz Question Set", SwingConstants.CENTER);
+        // Titel-Label (zentriert)
+        titleLabel = new JLabel("Wählen Sie ein Quiz-Set", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 32));
         titleLabel.setForeground(AppColors.COPY);
         gbc.gridy = 0;
         gbc.weightx = 1.0;
         gbc.gridwidth = 2;
-        add(titleLabel, gbc);
+        centerPanel.add(titleLabel, gbc);
 
-        // Panel for selection buttons (quiz set buttons)
+        // Panel für Auswahl-Buttons (Quiz-Set Buttons)
         JPanel selectionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         selectionPanel.setBackground(AppColors.BACKGROUND);
         JButton set1Button = new JButton("GeoQuiz Set 1");
@@ -44,37 +60,54 @@ public class MainMenuPanel extends JPanel {
         selectionPanel.add(set2Button);
         gbc.gridy = 1;
         gbc.gridwidth = 2;
-        add(selectionPanel, gbc);
+        centerPanel.add(selectionPanel, gbc);
 
-        // "Start Round" button at the bottom (initially hidden)
-        startButton = new JButton("Start Round");
+        // "Spiel Starten" Button (initial versteckt)
+        startButton = new JButton("Spiel Starten");
         styleButton(startButton, AppColors.SECONDARY, AppColors.SECONDARY_CONTENT);
         startButton.setFont(new Font("Arial", Font.BOLD, 24));
         startButton.setVisible(false);
         gbc.gridy = 2;
-        gbc.gridwidth = 2;  //TODO: Button Größe ist nicht richitg
-        add(startButton, gbc);
+        gbc.gridwidth = 2;
+        centerPanel.add(startButton, gbc);
 
-        // Action listeners for quiz set buttons:
+        // Füge das zentrale Panel in die CENTER-Region ein
+        add(centerPanel, BorderLayout.CENTER);
+
+        // Permanentes Label für die Bedienungsanleitung (SOUTH)
+        JLabel manualLabel = new JLabel("<html>Verfügbare Tasten:<br>" +
+                "<br>- Controller:<br>" +
+                "  • Pfeiltasten (oben, unten, links, rechts): Navigation<br>" +
+                "<br>- Tastatur:<br>" +
+                "  • Pfeiltasten oder W, A, S, D: Antwortauswahl<br>" +
+                "<br>- Zusätzlich:<br>" +
+                "  • Maus: Klickbare Buttons zur Steuerung</html>");
+        manualLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        manualLabel.setForeground(AppColors.COPY);
+        manualLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        add(manualLabel, BorderLayout.SOUTH);
+
+        // ActionListener für das erste Quiz-Set
         set1Button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 selectedSetName = "GeoQuiz Set 1";
-                titleLabel.setText("GeoQuiz Set 1 Selected");
+                titleLabel.setText("GeoQuiz Set 1 ausgewählt");
                 startButton.setVisible(true);
-                System.out.println("Selected Quiz Set: " + selectedSetName);
+                System.out.println("Ausgewähltes Quiz-Set: " + selectedSetName);
             }
         });
 
+        // ActionListener für das zweite Quiz-Set
         set2Button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 selectedSetName = "GeoQuiz Set 2";
-                titleLabel.setText("GeoQuiz Set 2 Selected");
+                titleLabel.setText("GeoQuiz Set 2 ausgewählt");
                 startButton.setVisible(true);
-                System.out.println("Selected Quiz Set: " + selectedSetName);
+                System.out.println("Ausgewähltes Quiz-Set: " + selectedSetName);
             }
         });
 
-        // Action listener for the "Start Round" button:
+        // ActionListener für den "Spiel Starten" Button
         startButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (selectedSetName != null) {
@@ -86,27 +119,49 @@ public class MainMenuPanel extends JPanel {
                     }
                     QuizSet quizSet = QuizSetLoader.loadQuizSet(filePath);
                     if (quizSet == null) {
-                        System.out.println("Failed to load quiz set from: " + filePath);
+                        System.out.println("Fehler beim Laden des Quiz-Sets von: " + filePath);
                         return;
                     }
-                    // Create QuizPanel with a callback to return to the main menu
+                    // Erstelle das QuizPanel mit Übergabe des QuizGame Managers und Callback zur Rückkehr ins Hauptmenü
                     QuizPanel quizPanel = new QuizPanel(new QuizGame(quizSet), new QuizFinishedListener() {
                         public void quizFinished() {
                             cardLayout.show(container, "MainMenu");
                         }
                     });
 
-                    // Register controller events (if using controller input)
-                    AutomatenController.getInstance().addListener(new KeyAdapter() {
+                    // KeyListener, der sowohl Pfeiltasten als auch W, A, S, D verarbeitet.
+                    quizPanel.addKeyListener(new KeyAdapter() {
                         @Override
                         public void keyPressed(KeyEvent e) {
                             int keyCode = e.getKeyCode();
-                            if (keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_5) {
-                                int selectedIndex = keyCode - KeyEvent.VK_0;
+                            int selectedIndex = -1;
+                            // Pfeiltasten
+                            if (keyCode == KeyEvent.VK_LEFT) {
+                                selectedIndex = 0;
+                            } else if (keyCode == KeyEvent.VK_RIGHT) {
+                                selectedIndex = 1;
+                            } else if (keyCode == KeyEvent.VK_UP) {
+                                selectedIndex = 2;
+                            } else if (keyCode == KeyEvent.VK_DOWN) {
+                                selectedIndex = 3;
+                            }
+                            // Alternativ: WASD
+                            else if (keyCode == KeyEvent.VK_A) {
+                                selectedIndex = 0;
+                            } else if (keyCode == KeyEvent.VK_D) {
+                                selectedIndex = 1;
+                            } else if (keyCode == KeyEvent.VK_W) {
+                                selectedIndex = 2;
+                            } else if (keyCode == KeyEvent.VK_S) {
+                                selectedIndex = 3;
+                            }
+                            if (selectedIndex != -1) {
                                 quizPanel.selectAnswer(selectedIndex);
                             }
                         }
                     });
+                    quizPanel.setFocusable(true);
+                    quizPanel.requestFocusInWindow();
 
                     container.add(quizPanel, "QuizPanel");
                     cardLayout.show(container, "QuizPanel");
@@ -115,7 +170,13 @@ public class MainMenuPanel extends JPanel {
         });
     }
 
-    // Helper method to style buttons with global colors.
+    /**
+     * Hilfsmethode zum Stylen von Buttons mit den globalen Farben.
+     *
+     * @param button     Der zu formatierende Button.
+     * @param background Hintergrundfarbe.
+     * @param foreground Vordergrundfarbe.
+     */
     private void styleButton(JButton button, Color background, Color foreground) {
         button.setBackground(background);
         button.setForeground(foreground);

@@ -2,22 +2,29 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Main is the entry point of the quiz game application.
- * It creates a full-screen window with a main menu for selecting the quiz set.
+ * Hauptklasse des Quiz-Spiels.
+ * <p>
+ * Diese Klasse startet das Spiel, indem sie ein Vollbild‑Fenster erstellt
+ * und das Hauptmenü initialisiert.
+ * </p>
  */
 public class Main {
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Quiz Game");
+        // Erstelle ein JFrame im Vollbildmodus
+        JFrame frame = new JFrame("Quiz Spiel");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setBounds(0, 0, screenSize.width, screenSize.height);
+        // Setze den Frame auf maximalen Bildschirm (Vollbild)
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
+        // CardLayout zur Verwaltung der Panels (z. B. Hauptmenü und Quiz)
         CardLayout cardLayout = new CardLayout();
         JPanel container = new JPanel(cardLayout);
 
+        // Erstelle und füge das Hauptmenü-Panel hinzu
         MainMenuPanel mainMenuPanel = new MainMenuPanel(cardLayout, container);
         container.add(mainMenuPanel, "MainMenu");
 
+        // Füge den Container dem Frame hinzu und zeige das Fenster an
         frame.add(container);
         frame.setVisible(true);
     }

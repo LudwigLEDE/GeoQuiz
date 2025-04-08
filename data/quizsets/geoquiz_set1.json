@@ -3,7 +3,7 @@
   "questions": [
     {
       "questionText": "Identify this famous landmark:",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Golden_Gate_Bridge_at_Sunset%2C_SF.jpg/300px-Golden_Gate_Bridge_at_Sunset%2C_SF.jpg",
+      "questionImage": "data/images/golden-gate-bridge.jpg",
       "answerOptions": [
         { "text": "San Francisco", "isCorrect": true },
         { "text": "New York", "isCorrect": false },
@@ -13,7 +13,7 @@
     },
     {
       "questionText": "Which city is depicted here?",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Berlin_Brandenburg_Gate.jpg/300px-Berlin_Brandenburg_Gate.jpg",
+      "questionImage": "data/images/brandenburger-tor.jpg",
       "answerOptions": [
         { "text": "Berlin", "isCorrect": true },
         { "text": "Vienna", "isCorrect": false },
@@ -23,7 +23,7 @@
     },
     {
       "questionText": "Identify this landmark:",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Statue_of_Liberty_7.jpg/300px-Statue_of_Liberty_7.jpg",
+      "questionImage": "data/images/statue-of-liberty.jpg",
       "answerOptions": [
         { "text": "New York", "isCorrect": true },
         { "text": "Washington, D.C.", "isCorrect": false },
@@ -33,7 +33,7 @@
     },
     {
       "questionText": "Which city is this famous tower located in?",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Tour_Eiffel_Wikimedia_Commons.jpg/300px-Tour_Eiffel_Wikimedia_Commons.jpg",
+      "questionImage": "data/images/eiffelturm.jpg",
       "answerOptions": [
         { "text": "Paris", "isCorrect": true },
         { "text": "London", "isCorrect": false },
@@ -43,7 +43,7 @@
     },
     {
       "questionText": "Identify the famous clock tower in this image:",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Big_Ben_-_London_-_April_2006.jpg/300px-Big_Ben_-_London_-_April_2006.jpg",
+      "questionImage": "data/images/big-ben.jpg",
       "answerOptions": [
         { "text": "London", "isCorrect": true },
         { "text": "Edinburgh", "isCorrect": false },
@@ -53,7 +53,7 @@
     },
     {
       "questionText": "Which iconic bridge is depicted in this image?",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Sydney_Harbour_Bridge_from_the_north.jpg/300px-Sydney_Harbour_Bridge_from_the_north.jpg",
+      "questionImage": "data/images/sydney-harbour-bridge.jpg",
       "answerOptions": [
         { "text": "Sydney", "isCorrect": true },
         { "text": "Melbourne", "isCorrect": false },
@@ -63,7 +63,7 @@
     },
     {
       "questionText": "Identify this ancient structure:",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg/300px-Colosseum_in_Rome%2C_Italy_-_April_2007.jpg",
+      "questionImage": "data/images/kolosseum.jpg",
       "answerOptions": [
         { "text": "Rome", "isCorrect": true },
         { "text": "Athens", "isCorrect": false },
@@ -73,7 +73,7 @@
     },
     {
       "questionText": "Which city is home to this famous statue?",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Christ_the_Redeemer_-_Rio_de_Janeiro%2C_Brazil.jpg/300px-Christ_the_Redeemer_-_Rio_de_Janeiro%2C_Brazil.jpg",
+      "questionImage": "data/images/christ-the-redeemer.jpg",
       "answerOptions": [
         { "text": "Rio de Janeiro", "isCorrect": true },
         { "text": "Buenos Aires", "isCorrect": false },
@@ -83,7 +83,7 @@
     },
     {
       "questionText": "Identify this iconic mosque:",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Sultan_Ahmed_Mosque_%28Blue_Mosque%29%2C_Istanbul%2C_Turkey.jpg/300px-Sultan_Ahmed_Mosque_%28Blue_Mosque%29%2C_Istanbul%2C_Turkey.jpg",
+      "questionImage": "data/images/blaue-moschee.jpg",
       "answerOptions": [
         { "text": "Istanbul", "isCorrect": true },
         { "text": "Cairo", "isCorrect": false },
@@ -93,7 +93,7 @@
     },
     {
       "questionText": "Which famous palace is depicted in this image?",
-      "questionImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Versailles_Palace_in_Paris.jpg/300px-Versailles_Palace_in_Paris.jpg",
+      "questionImage": "data/images/versailles-palast.jpg",
       "answerOptions": [
         { "text": "Versailles", "isCorrect": true },
         { "text": "Windsor", "isCorrect": false },
